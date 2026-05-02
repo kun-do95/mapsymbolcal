@@ -223,6 +223,7 @@ window.onload = function() {
     const savedBuff = localStorage.getItem('symbol_buff_level');
     if (savedBuff !== null) document.getElementById('buff-level').value = savedBuff;
     init(); // 카드 생성 및 초기 계산 시작
+    localStorage.setItem('last_search_name', charName);[cite: 1]
 };
 </script>
 </body>
