@@ -2,92 +2,60 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>어센틱 심볼 통합 계산기 (일퀘 완료 버튼 추가)</title>
+    <title>어센틱 심볼 통합 계산기</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding: 40px; margin: 0; }
         .container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1200px; margin-bottom: 30px; }
-        
         .calc-card { border: 1px solid #ddd; border-radius: 15px; padding: 25px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; position: relative; }
         .header { text-align: center; margin-bottom: 15px; }
         .symbol-img { width: 60px; height: 60px; margin-bottom: 10px; object-fit: contain; }
         .symbol-name { font-size: 17px; font-weight: bold; color: #333; display: block; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; }
-        
         .level-status { text-align: center; margin-bottom: 5px; font-size: 14px; }
-        .lv-input, .growth-input, .weekly, .goal, .extra { 
-            width: 55px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; 
-            text-align: left; font-weight: bold; outline: none; background: #fafafa;
-        }
-        
+        .lv-input, .growth-input, .weekly, .goal, .extra { width: 55px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; text-align: left; font-weight: bold; outline: none; background: #fafafa; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-
         .max-growth { color: #007bff; font-weight: bold; }
         .unpaid-area { text-align: center; color: #ff4d4f; font-weight: bold; font-size: 13px; margin-bottom: 15px; height: 18px; }
-
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; align-items: flex-start; }
         .input-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; font-weight: bold; }
-        
         .daily-display { font-size: 18px; font-weight: bold; color: #333; padding: 4px 0; display: block; text-align: left; width: 100%; }
         .bonus-added { color: #d32f2f; }
-
-        /* 일퀘 완료 버튼 스타일 */
-        .done-btn {
-            width: 100%; padding: 10px; margin-bottom: 15px; background-color: #4caf50; color: white;
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;
-        }
+        .done-btn { width: 100%; padding: 10px; margin-bottom: 15px; background-color: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .done-btn:hover { background-color: #43a047; }
-        .done-btn:active { background-color: #388e3c; }
-
         .result-section { border-top: 1px solid #f0f0f0; padding-top: 15px; }
         .result-table { width: 100%; border-collapse: collapse; }
         .result-table th { background: #f8f9fa; border: 1px solid #eee; padding: 8px; text-align: left; font-size: 13px; width: 40%; }
         .result-table td { border: 1px solid #eee; padding: 8px; text-align: right; font-size: 13px; font-weight: bold; }
         .highlight-text { color: #d32f2f; }
-
-        .event-skill-card { 
-            width: 1100px; padding: 25px; background: #fff1f1; border: 2px solid #ffcccc; 
-            border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .skill-select { padding: 10px 20px; border-radius: 10px; border: 1px solid #ffcccc; font-size: 14px; font-weight: bold; cursor: pointer; outline: none; }
-        /* 오른쪽 상단 요약 보드 */
-        .summary-board {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            background: #333; color: white; padding: 15px 20px; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); min-width: 220px;
-        }
+        .summary-board { position: fixed; top: 20px; right: 20px; z-index: 1000; background: #333; color: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); min-width: 220px; }
         .summary-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
         .summary-val { font-weight: bold; margin-left: 15px; }
         .sum-red { color: #ff6b6b; }
         .sum-gold { color: #ffd700; }
+        .event-skill-card { width: 1100px; padding: 25px; background: #fff1f1; border: 2px solid #ffcccc; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .skill-select { padding: 10px 20px; border-radius: 10px; border: 1px solid #ffcccc; font-size: 14px; font-weight: bold; cursor: pointer; outline: none; }
     </style>
 </head>
 <body>
-<!-- API 키 및 캐릭터 검색 설정창 -->
+
+<!-- 상단 설정창 -->
 <div class="setup-container" style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 1100px; box-sizing: border-box; margin-top: 20px;">
-    <!-- API 키 입력줄 -->
     <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
         <input type="password" id="api-key-input" placeholder="넥슨 오픈 API KEY 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 450px; font-weight: bold;">
         <button onclick="saveApiKey()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">키 저장</button>
     </div>
-    <!-- 닉네임 검색줄 -->
     <div style="display: flex; gap: 10px; justify-content: center;">
         <input type="text" id="char-name" placeholder="캐릭터 닉네임 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-weight: bold;">
-        <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">심볼 정보 불러오기</button>
+        <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">정보 불러오기</button>
     </div>
 </div>
 
-<!-- 전체 요약 보드 -->
+<!-- 우측 상단 요약 -->
 <div class="summary-board">
     <div style="font-weight: bold; font-size: 12px; color: #bbb; margin-bottom: 10px; border-bottom: 1px solid #555; padding-bottom: 5px;">전체 요약</div>
-    <div class="summary-item">
-        <span>전체 체납액:</span>
-        <span class="summary-val sum-red" id="total-unpaid">0 메소</span>
-    </div>
-    <div class="summary-item">
-        <span>총 필요 메소:</span>
-        <span class="summary-val sum-gold" id="total-required">0 메소</span>
-    </div>
+    <div class="summary-item"><span>전체 체납액:</span><span class="summary-val sum-red" id="total-unpaid">0 메소</span></div>
+    <div class="summary-item"><span>총 필요 메소:</span><span class="summary-val sum-gold" id="total-required">0 메소</span></div>
 </div>
 
 <div class="container" id="card-container"></div>
@@ -96,13 +64,7 @@
     <strong style="color:#d32f2f; display:block; margin-bottom:10px;">✨ 그란디스 일일 미션 보상 (보약 스킬) ✨</strong>
     보약 레벨 설정: 
     <select id="buff-level" class="skill-select" onchange="saveAndRefresh()">
-        <option value="0">보약 스킬 미적용</option>
-        <option value="2">1레벨 (+2개)</option>
-        <option value="3">2레벨 (+3개)</option>
-        <option value="4">3레벨 (+4개)</option>
-        <option value="5">4레벨 (+5개)</option>
-        <option value="7">5레벨 (+7개)</option>
-        <option value="9">6레벨 (+9개)</option>
+        <option value="0">보약 스킬 미적용</option><option value="2">1레벨 (+2개)</option><option value="3">2레벨 (+3개)</option><option value="4">3레벨 (+4개)</option><option value="5">4레벨 (+5개)</option><option value="7">5레벨 (+7개)</option><option value="9">6레벨 (+9개)</option>
     </select>
 </div>
 
@@ -117,89 +79,17 @@ const regions = [
     { id: 'carcion', name: '카르시온', daily: 15, img: 'carcion.png', costs: [0, 6260, 15960, 28760, 44350, 62400, 82580, 104580, 128060, 152710, 178200] }
 ];
 
-// [중요] 기존의 const API_KEY = "..." 부분은 삭제하세요.
-
-// 사용자가 입력한 API 키를 브라우저에 저장하는 함수
-function saveApiKey() {
-    const key = document.getElementById('api-key-input').value;
-    if(!key) return alert("키를 입력해주세요.");
-    localStorage.setItem('nexon_api_key', key);[cite: 1]
-    alert("API 키가 브라우저에 안전하게 저장되었습니다. (페이지를 새로고침해도 유지됩니다)");
-}
-
-
-// 1. API 키 저장 함수
-function saveApiKey() {
-    const key = document.getElementById('api-key-input').value;
-    if(!key) return alert("키를 입력해주세요.");
-    localStorage.setItem('nexon_api_key', key);
-    alert("API 키가 브라우저에 저장되었습니다.");
-}
-
-// 2. 캐릭터 데이터 불러오기 함수 (통합본)
-async function fetchCharacterData() {
-    const savedKey = localStorage.getItem('nexon_api_key');
-    if(!savedKey) return alert("먼저 API KEY를 입력하고 '키 저장' 버튼을 눌러주세요.");
-
-    const charName = document.getElementById('char-name').value;
-    if(!charName) return alert("닉네임을 입력해주세요.");
-
-    try {
-        // 캐릭터 식별자(OCID) 조회
-        const ocidRes = await fetch(`https://open.api.nexon.com/maplestory/v1/id?character_name=${encodeURIComponent(charName)}`, {
-            headers: { "x-nxopen-api-key": savedKey }
-        });
-        const ocidData = await ocidRes.json();
-        if(!ocidData.ocid) throw new Error("캐릭터를 찾을 수 없습니다.");
-
-        // 심볼 정보 조회
-        const symbolRes = await fetch(`https://open.api.nexon.com/maplestory/v1/character/symbol-equipment?ocid=${ocidData.ocid}`, {
-            headers: { "x-nxopen-api-key": savedKey }
-        });
-        const symbolData = await symbolRes.json();
-
-        // 데이터 매핑 및 자동 입력
-        const mapping = { "세르니움": "cernium", "호텔 아르크스": "arcus", "오디움": "odium", "도원경": "shangriLa", "아르테리아": "artieria", "카르시온": "carcion" };
-        
-        let found = false;
-        symbolData.symbol.forEach(s => {
-            const regionKey = Object.keys(mapping).find(key => s.symbol_name.includes(key));
-            const regionId = mapping[regionKey];
-            if(regionId) {
-                const card = document.getElementById(`card-${regionId}`);
-                card.querySelector('.lv-input').value = s.symbol_level;
-                card.querySelector('.growth-input').value = s.symbol_count;
-                saveAndRefresh(regionId); 
-                found = true;
-            }
-        });
-        
-        if(found) alert(`${charName}님의 정보를 불러왔습니다.`);
-        else alert("장착된 어센틱 심볼이 없습니다.");
-        
-    } catch (e) {
-        alert("오류 발생: " + e.message);
-    }
-}
-
-
 const container = document.getElementById('card-container');
 
+// 카드 생성 로직
 regions.forEach(reg => {
     const savedData = JSON.parse(localStorage.getItem(`symbol_${reg.id}`)) || {};
     const card = document.createElement('div');
     card.className = 'calc-card';
     card.id = `card-${reg.id}`;
     card.innerHTML = `
-        <div class="header">
-            <img src="${reg.img}" alt="${reg.name}" class="symbol-img" onerror="this.style.display='none'">
-            <span class="symbol-name">어센틱심볼 : ${reg.name}</span>
-        </div>
-        <div class="level-status">
-            레벨 <input type="number" class="lv-input" value="${savedData.lv || 1}" min="1" max="11" oninput="saveAndRefresh('${reg.id}')"> 
-            EXP <input type="number" class="growth-input" value="${savedData.count || 0}" oninput="saveAndRefresh('${reg.id}')"> 
-            / <span class="max-growth">29</span>
-        </div>
+        <div class="header"><img src="${reg.img}" alt="${reg.name}" class="symbol-img" onerror="this.style.display='none'"><span class="symbol-name">어센틱심볼 : ${reg.name}</span></div>
+        <div class="level-status">레벨 <input type="number" class="lv-input" value="${savedData.lv || 1}" min="1" max="11" oninput="saveAndRefresh('${reg.id}')"> EXP <input type="number" class="growth-input" value="${savedData.count || 0}" oninput="saveAndRefresh('${reg.id}')"> / <span class="max-growth">29</span></div>
         <div class="unpaid-area unpaid-text" id="unpaid-val-${reg.id}">체납: 0메소</div>
         <div class="input-grid">
             <div class="input-group"><label>기본 일퀘</label><span class="daily-display" id="display-${reg.id}">${reg.daily}</span></div>
@@ -208,73 +98,79 @@ regions.forEach(reg => {
             <div class="input-group"><label>추가 심볼</label><input type="number" class="extra" value="${savedData.extra || 0}" oninput="saveAndRefresh('${reg.id}')"></div>
         </div>
         <button class="done-btn" onclick="completeDaily('${reg.id}')">오늘 일퀘 완료</button>
-        <div class="result-section">
-            <table class="result-table">
-                <tr><th>완료일</th><td class="res-date">-</td></tr>
-                <tr><th>필요심볼</th><td class="res-symbol highlight-text">0개</td></tr>
-                <tr><th>필요메소</th><td class="res-meso highlight-text" id="need-val-${reg.id}">0메소</td></tr>
-            </table>
-        </div>
+        <div class="result-section"><table class="result-table"><tr><th>완료일</th><td class="res-date">-</td></tr><tr><th>필요심볼</th><td class="res-symbol highlight-text">0개</td></tr><tr><th>필요메소</th><td class="res-meso highlight-text" id="need-val-${reg.id}">0메소</td></tr></table></div>
     `;
     container.appendChild(card);
 });
 
-window.onload = function() {
-    const savedBuff = localStorage.getItem('symbol_buff_level');
-    if (savedBuff !== null) document.getElementById('buff-level').value = savedBuff;
-    updateAll();
-};
+function saveApiKey() {
+    const key = document.getElementById('api-key-input').value;
+    if(!key) return alert("키를 입력해주세요.");
+    localStorage.setItem('nexon_api_key', key);
+    alert("키가 저장되었습니다.");
+}
 
-// 전체 체납 및 필요 메소 합산 로직
+async function fetchCharacterData() {
+    const savedKey = localStorage.getItem('nexon_api_key');
+    if(!savedKey) return alert("API KEY를 저장해주세요.");
+    const charName = document.getElementById('char-name').value;
+    if(!charName) return alert("닉네임을 입력하세요.");
+
+    try {
+        const ocidRes = await fetch(`https://open.api.nexon.com/maplestory/v1/id?character_name=${encodeURIComponent(charName)}`, { headers: { "x-nxopen-api-key": savedKey } });
+        const ocidData = await ocidRes.json();
+        if(!ocidData.ocid) throw new Error("캐릭터를 찾을 수 없습니다.");
+        const symbolRes = await fetch(`https://open.api.nexon.com/maplestory/v1/character/symbol-equipment?ocid=${ocidData.ocid}`, { headers: { "x-nxopen-api-key": savedKey } });
+        const symbolData = await symbolRes.json();
+        const mapping = { "세르니움": "cernium", "호텔 아르크스": "arcus", "오디움": "odium", "도원경": "shangriLa", "아르테리아": "artieria", "카르시온": "carcion" };
+        symbolData.symbol.forEach(s => {
+            const regionKey = Object.keys(mapping).find(key => s.symbol_name.includes(key));
+            const regionId = mapping[regionKey];
+            if(regionId) {
+                const card = document.getElementById(`card-${regionId}`);
+                card.querySelector('.lv-input').value = s.symbol_level;
+                card.querySelector('.growth-input').value = s.symbol_count;
+                saveAndRefresh(regionId);
+            }
+        });
+        alert(`${charName} 정보를 동기화했습니다.`);
+    } catch (e) { alert(e.message); }
+}
+
 function updateSummary() {
-    let totalUnpaid = 0;
-    let totalRequired = 0;
-
+    let totalUnpaid = 0; let totalRequired = 0;
     regions.forEach(reg => {
-        const unpaidEl = document.getElementById(`unpaid-val-${reg.id}`);
-        const needEl = document.getElementById(`need-val-${reg.id}`);
-        
-        if(unpaidEl && needEl) {
-            totalUnpaid += parseInt(unpaidEl.innerText.replace(/[^0-9]/g, "")) || 0;
-            totalRequired += parseInt(needEl.innerText.replace(/[^0-9]/g, "")) || 0;
-        }
+        const unpaidTxt = document.getElementById(`unpaid-val-${reg.id}`).innerText;
+        const needTxt = document.getElementById(`need-val-${reg.id}`).innerText;
+        totalUnpaid += parseInt(unpaidTxt.replace(/[^0-9]/g, "")) || 0;
+        totalRequired += parseInt(needTxt.replace(/[^0-9]/g, "")) || 0;
     });
-
     document.getElementById('total-unpaid').innerText = totalUnpaid.toLocaleString() + " 메소";
     document.getElementById('total-required').innerText = totalRequired.toLocaleString() + " 메소";
 }
 
-// 일퀘 완료 버튼 기능
 function completeDaily(regionId) {
     const regData = regions.find(r => r.id === regionId);
     const card = document.getElementById(`card-${regionId}`);
-    const growthInput = card.querySelector('.growth-input');
-    
-    const buffBonus = parseInt(document.getElementById('buff-level').value) || 0;
-    const currentExp = parseInt(growthInput.value) || 0;
-    const totalGain = regData.daily + buffBonus;
-
-    // 현재 EXP에 획득량 추가
-    growthInput.value = currentExp + totalGain;
-    
-    // 알림 후 저장 및 새로고침
+    const input = card.querySelector('.growth-input');
+    const buff = parseInt(document.getElementById('buff-level').value) || 0;
+    input.value = (parseInt(input.value) || 0) + regData.daily + buff;
     saveAndRefresh(regionId);
 }
 
 function saveAndRefresh(regionId) {
     if (regionId) {
-        // ... 기존 코드 동일
+        const card = document.getElementById(`card-${regionId}`);
+        const data = { lv: card.querySelector('.lv-input').value, count: card.querySelector('.growth-input').value, weekly: card.querySelector('.weekly').value, goal: card.querySelector('.goal').value, extra: card.querySelector('.extra').value };
         localStorage.setItem(`symbol_${regionId}`, JSON.stringify(data));
         calculate(regionId);
     } else {
         localStorage.setItem('symbol_buff_level', document.getElementById('buff-level').value);
         updateAll();
-        updateSummary(); // 이 줄을 추가하세요!
     }
 }
 
-function updateAll() { regions.forEach(reg => calculate(reg.id));
-    updateSummary(); }
+function updateAll() { regions.forEach(reg => calculate(reg.id)); }
 
 function calculate(regionId) {
     const regData = regions.find(r => r.id === regionId);
@@ -284,15 +180,11 @@ function calculate(regionId) {
     const weekly = parseInt(card.querySelector('.weekly').value) || 0;
     const goal = parseInt(card.querySelector('.goal').value) || 11;
     const extra = parseInt(card.querySelector('.extra').value) || 0;
-
-    const buffBonus = parseInt(document.getElementById('buff-level').value) || 0;
-    const finalDaily = regData.daily + buffBonus;
-    const displayEl = document.getElementById(`display-${regionId}`);
-    displayEl.innerText = finalDaily;
-    if (buffBonus > 0) displayEl.classList.add('bonus-added');
-    else displayEl.classList.remove('bonus-added');
-
-    card.querySelector('.max-growth').innerText = needExp[lv];
+    const buff = parseInt(document.getElementById('buff-level').value) || 0;
+    const finalDaily = regData.daily + buff;
+    
+    document.getElementById(`display-${regionId}`).innerText = finalDaily;
+    card.querySelector('.max-growth').innerText = needExp[lv] || 0;
 
     let unpaidMeso = 0; let tempCount = count; let tempLv = lv;
     while (tempLv < 11 && tempCount >= (needExp[tempLv] || 999999)) {
@@ -300,7 +192,7 @@ function calculate(regionId) {
         tempCount -= needExp[tempLv];
         tempLv++;
     }
-    card.querySelector('.unpaid-text').innerText = unpaidMeso > 0 ? `체납: ${unpaidMeso.toLocaleString()}메소` : "체납: 0메소";
+    document.getElementById(`unpaid-val-${regionId}`).innerText = `체납: ${unpaidMeso.toLocaleString()}메소`;
 
     let totalRequired = 0; let totalCost = 0;
     for (let i = lv; i < goal; i++) {
@@ -311,18 +203,20 @@ function calculate(regionId) {
     const netRequired = Math.max(0, totalRequired - count - extra);
     const dailyAvg = finalDaily + (weekly / 7);
     const daysLeft = dailyAvg > 0 ? Math.ceil(netRequired / dailyAvg) : 0;
-
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + daysLeft);
     
-    let dateStr = (lv >= goal || daysLeft === 0) ? "완료" : 
-        `${targetDate.getFullYear()}년 ${(targetDate.getMonth()+1).toString().padStart(2,'0')}월 ${targetDate.getDate().toString().padStart(2,'0')}일`;
-
     card.querySelector('.res-symbol').innerText = netRequired.toLocaleString() + "개";
-    card.querySelector('.res-meso').innerText = totalCost.toLocaleString() + "메소";
-    card.querySelector('.res-date').innerText = dateStr;
-    updateSummary();
+    document.getElementById(`need-val-${regionId}`).innerText = totalCost.toLocaleString() + "메소";
+    card.querySelector('.res-date').innerText = (lv >= goal || daysLeft === 0) ? "완료" : `${targetDate.getFullYear()}년 ${(targetDate.getMonth()+1)}월 ${targetDate.getDate()}일`;
+    updateSummary();[cite: 1]
 }
+
+window.onload = function() {
+    const savedBuff = localStorage.getItem('symbol_buff_level');
+    if (savedBuff !== null) document.getElementById('buff-level').value = savedBuff;
+    updateAll();[cite: 1]
+};
 </script>
 </body>
 </html>
