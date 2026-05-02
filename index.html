@@ -121,15 +121,29 @@ async function fetchCharacterData() {
         
         const map = {"세르니움":"cernium","아르크스":"arcus","오디움":"odium","도원경":"shangriLa","아르테리아":"artieria","카르시온":"carcion"};
         
-        d2.symbol.forEach(s => {
-            for(let k in map) {
-                if(s.symbol_name.includes(k)) {
-                    const c = document.getElementById(`card-${map[k]}`);
-                    if(c) {
-                        c.querySelector('.lv-input').value = s.symbol_level;
-                        c.querySelector('.growth-input').value = s.symbol_count;
-                        saveAndRefresh(map[k]);
-                    }
+        const mapping = {
+            "세르니움": "cernium",
+            "호텔 아르크스": "arcus", 
+            "오디움": "odium", 
+            "도원경": "shangriLa", 
+            "아르테리아": "artieria", 
+            "카르시온": "carcion"
+        };
+        symbolData.symbol.forEach(s => {
+            // 1. 심볼 이름에서 지역 키워드를 찾습니다.
+            const regionKey = Object.keys(mapping).find(key => s.symbol_name.includes(key));
+            const regionId = mapping[regionKey];
+
+            if (regionId) {
+                const card = document.getElementById(`card-${regionId}`);
+                if (card) {
+                    // 2. 레벨과 경험치(count)를 각각의 입력칸에 넣습니다.
+                    // 넥슨 API는 현재 경험치를 'symbol_count'라는 이름으로 보냅니다.
+                    card.querySelector('.lv-input').value = s.symbol_level;
+                    card.querySelector('.growth-input').value = s.symbol_count; 
+
+                    // 3. 데이터를 저장하고 화면 계산을 갱신합니다.
+                    saveAndRefresh(regionId); 
                 }
             }
         });
