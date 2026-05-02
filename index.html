@@ -128,12 +128,18 @@
 
 <body>
 
-<div class="search-container" style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; background: white; padding: 20px; border-radius: 15px; width: 1100px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px;">
-
-    <input type="text" id="char-name" placeholder="캐릭터 닉네임 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-weight: bold;">
-
-    <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">심볼 정보 불러오기</button>
-
+<!-- API 키 및 캐릭터 검색 설정창 -->
+<div class="setup-container" style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 1100px; box-sizing: border-box; margin-top: 20px;">
+    <!-- API 키 입력줄 -->
+    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        <input type="password" id="api-key-input" placeholder="넥슨 오픈 API KEY 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 450px; font-weight: bold;">
+        <button onclick="saveApiKey()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">키 저장</button>
+    </div>
+    <!-- 닉네임 검색줄 -->
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <input type="text" id="char-name" placeholder="캐릭터 닉네임 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-weight: bold;">
+        <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">심볼 정보 불러오기</button>
+    </div>
 </div>
 
 
