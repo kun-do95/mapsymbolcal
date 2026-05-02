@@ -63,9 +63,18 @@
     </style>
 </head>
 <body>
-<div class="search-container" style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; background: white; padding: 20px; border-radius: 15px; width: 1100px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px;">
-    <input type="text" id="char-name" placeholder="캐릭터 닉네임 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-weight: bold;">
-    <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">심볼 정보 불러오기</button>
+<!-- API 키 및 캐릭터 검색 설정창 -->
+<div class="setup-container" style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 1100px; box-sizing: border-box; margin-top: 20px;">
+    <!-- API 키 입력줄 -->
+    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        <input type="password" id="api-key-input" placeholder="넥슨 오픈 API KEY 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 450px; font-weight: bold;">
+        <button onclick="saveApiKey()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">키 저장</button>
+    </div>
+    <!-- 닉네임 검색줄 -->
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <input type="text" id="char-name" placeholder="캐릭터 닉네임 입력" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; width: 250px; font-weight: bold;">
+        <button onclick="fetchCharacterData()" style="padding: 10px 30px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">심볼 정보 불러오기</button>
+    </div>
 </div>
 
 <!-- 전체 요약 보드 -->
@@ -108,30 +117,51 @@ const regions = [
     { id: 'carcion', name: '카르시온', daily: 15, img: 'carcion.png', costs: [0, 6260, 15960, 28760, 44350, 62400, 82580, 104580, 128060, 152710, 178200] }
 ];
 
-/* --- 이 사이에 삽입 --- */
-const API_KEY = ""; // 본인의 API 키
+// [중요] 기존의 const API_KEY = "..." 부분은 삭제하세요.
 
+// 사용자가 입력한 API 키를 브라우저에 저장하는 함수
+function saveApiKey() {
+    const key = document.getElementById('api-key-input').value;
+    if(!key) return alert("키를 입력해주세요.");
+    localStorage.setItem('nexon_api_key', key);[cite: 1]
+    alert("API 키가 브라우저에 안전하게 저장되었습니다. (페이지를 새로고침해도 유지됩니다)");
+}
+
+
+// 1. API 키 저장 함수
+function saveApiKey() {
+    const key = document.getElementById('api-key-input').value;
+    if(!key) return alert("키를 입력해주세요.");
+    localStorage.setItem('nexon_api_key', key);
+    alert("API 키가 브라우저에 저장되었습니다.");
+}
+
+// 2. 캐릭터 데이터 불러오기 함수 (통합본)
 async function fetchCharacterData() {
+    const savedKey = localStorage.getItem('nexon_api_key');
+    if(!savedKey) return alert("먼저 API KEY를 입력하고 '키 저장' 버튼을 눌러주세요.");
+
     const charName = document.getElementById('char-name').value;
     if(!charName) return alert("닉네임을 입력해주세요.");
 
     try {
         // 캐릭터 식별자(OCID) 조회
         const ocidRes = await fetch(`https://open.api.nexon.com/maplestory/v1/id?character_name=${encodeURIComponent(charName)}`, {
-            headers: { "x-nxopen-api-key": API_KEY }
+            headers: { "x-nxopen-api-key": savedKey }
         });
         const ocidData = await ocidRes.json();
         if(!ocidData.ocid) throw new Error("캐릭터를 찾을 수 없습니다.");
 
         // 심볼 정보 조회
         const symbolRes = await fetch(`https://open.api.nexon.com/maplestory/v1/character/symbol-equipment?ocid=${ocidData.ocid}`, {
-            headers: { "x-nxopen-api-key": API_KEY }
+            headers: { "x-nxopen-api-key": savedKey }
         });
         const symbolData = await symbolRes.json();
 
         // 데이터 매핑 및 자동 입력
         const mapping = { "세르니움": "cernium", "호텔 아르크스": "arcus", "오디움": "odium", "도원경": "shangriLa", "아르테리아": "artieria", "카르시온": "carcion" };
         
+        let found = false;
         symbolData.symbol.forEach(s => {
             const regionKey = Object.keys(mapping).find(key => s.symbol_name.includes(key));
             const regionId = mapping[regionKey];
@@ -139,15 +169,19 @@ async function fetchCharacterData() {
                 const card = document.getElementById(`card-${regionId}`);
                 card.querySelector('.lv-input').value = s.symbol_level;
                 card.querySelector('.growth-input').value = s.symbol_count;
-                saveAndRefresh(regionId); // 값 변경 후 즉시 저장 및 계산 갱신[cite: 1]
+                saveAndRefresh(regionId); 
+                found = true;
             }
         });
-        alert(`${charName}님의 정보를 불러왔습니다.`);
+        
+        if(found) alert(`${charName}님의 정보를 불러왔습니다.`);
+        else alert("장착된 어센틱 심볼이 없습니다.");
+        
     } catch (e) {
-        alert(e.message);
+        alert("오류 발생: " + e.message);
     }
 }
-/* -------------------- */
+
 
 const container = document.getElementById('card-container');
 
